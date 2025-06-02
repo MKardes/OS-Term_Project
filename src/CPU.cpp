@@ -112,6 +112,7 @@ void CPU::execute_instruction(long tn, InstructionBlock *instruction) {
     DataBlock *data_block = nullptr;
     long inner_address_1 = 0;
     long inner_address_2 = 0;
+    long stack_pointer = 0;
 
     switch (instruction->getOpcode1()) {
         case OpCode::SET:
@@ -173,19 +174,42 @@ void CPU::execute_instruction(long tn, InstructionBlock *instruction) {
             break;
         case OpCode::PUSH:
             // PUSH A: Push memory value onto stack
-            // TODO: Implement PUSH
+            stack_pointer = memory.getRegister(1)->getValue();
+
+            data_block = memory.getDataBlock(tn, instruction->getOperand1());
+            value = data_block->getValue();
+            memory.setDataBlock(tn, stack_pointer, value);
+
+            memory.setRegister(1, stack_pointer - 1);
             break;
         case OpCode::POP:
             // POP A: Pop value from stack into memory
-            // TODO: Implement POP
+            stack_pointer = memory.getRegister(1)->getValue();
+            stack_pointer = stack_pointer + 1;
+
+            data_block = memory.getDataBlock(tn, stack_pointer);
+            value = data_block->getValue();
+            memory.setDataBlock(tn, instruction->getOperand1(), value);
+
+            memory.setRegister(1, stack_pointer);
             break;
         case OpCode::CALL:
             // CALL C: Call subroutine at specified instruction
-            // TODO: Implement CALL
+            stack_pointer = memory.getRegister(1)->getValue();
+            memory.setDataBlock(tn, stack_pointer, computed_pg); // PUSH RETURN ADDRESS TO STACK
+            memory.setRegister(1, stack_pointer - 1);
+
+            computed_pg = instruction->getOperand1();
             break;
         case OpCode::RET:
             // RET: Return from subroutine
-            // TODO: Implement RET
+            stack_pointer = memory.getRegister(1)->getValue();
+            stack_pointer = stack_pointer + 1;
+            data_block = memory.getDataBlock(tn, stack_pointer);
+            value = data_block->getValue(); // POP RETURN ADDRESS FROM STACK
+            memory.setRegister(1, stack_pointer);
+
+            computed_pg = value;
             break;
         case OpCode::HLT:
             // HLT: Halts the CPU execution
@@ -226,7 +250,9 @@ void CPU::execute() {
     long thread = memory.getRegister(4)->getValue(); // Get the thread number
     execute_instruction(thread, instruction);
     std::cout << "After execution: " << std::endl;
-    memory.printMemoryBlocks(thread, 34, 55);
+    memory.printMemoryBlocks(thread, 50, 80);
+    std::cout << "Stack pointer: " << memory.getRegister(1)->getValue() << std::endl;
+    memory.printMemoryBlocks(thread, 995, 1000);
     std::cout << "After execution: " << std::endl;
 }
 

@@ -1,6 +1,6 @@
 Begin Data Section
 0 0
-1 0
+1 959
 2 0
 3 0
 4 0
@@ -31,9 +31,19 @@ Begin Data Section
 29 0
 End Data Section
 Begin Instruction Section
-JIF 22 2
-SET 23 4
-JIF 22 4
+JIF 22 12
+SET 1 16
+CALL 4
+RET
+SET 1 17
+CALL 7
+RET
+SET 1 18
+CALL 10
+RET
+SET 1 19
+RET
+JIF 22 14
 SET 1000 29
 SET 29 24
 CPY 24 28
@@ -47,5 +57,17 @@ ADD 18 1
 SET 20 30
 ADDI 18 30
 SUBI 30 29
+PUSH 29
+PUSH 28
+POP 10
+PUSH 0
+POP 11
+POP 12
+PUSH 6
+PUSH 6
+POP 6
+POP 6
+PUSH 21
+CALL 1
 HLT
 End Instruction Section
