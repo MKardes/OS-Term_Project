@@ -1,0 +1,51 @@
+Begin Data Section
+0 0
+1 0
+2 0
+3 0
+4 0
+5 0
+6 0
+7 0
+8 0
+9 0
+10 0
+11 0
+12 0
+13 0
+14 0
+15 0
+16 0
+17 0
+18 0
+19 0
+20 0
+21 0
+22 0
+23 1
+24 0
+25 0
+26 0
+27 0
+28 0
+29 0
+End Data Section
+Begin Instruction Section
+JIF 22 2
+SET 23 4
+JIF 22 4
+SET 1000 29
+SET 29 24
+CPY 24 28
+SET 123 29
+CPYI 24 28
+SET 21 17
+SET 999 21
+SET 18 19
+CPYI2 17 19
+ADD 18 1
+SET 20 30
+ADDI 18 30
+SUBI 30 29
+HLT
+End Instruction Section
