@@ -56,7 +56,7 @@ void Memory::fillMemoryBlocks(int tn, std::vector<InstructionBlock> &instruction
         }
 
         for (int i = data_block_size; data_block_start + i < 1000; i++) {
-            memory_blocks[tn][data_block_start + i] = new DataBlock();/* new DataBlock(i, 0);  */ // For stack pointer 
+            memory_blocks[tn][data_block_start + i] = new DataBlock(i, 0);/*  new DataBlock();  */ // For stack pointer 
             // TODO: it could be addressed or without address for stack examine again
         }
     }
@@ -92,6 +92,72 @@ void Memory::printMemoryBlocks(int tn, long unsigned int start, long unsigned in
         for (long unsigned int i = start; i < memory_blocks[tn].size() && i < end; i++) {
             std::cout << memory_blocks[tn][i]->toString() << std::endl;
         }
+    }
+}
+
+void Memory::debug() {
+    int mem = 0;
+    std::cerr << "******************************************************************************" << std::endl;
+    std::cerr << "Debug 1 Begin" << std::endl;
+    std::cerr << "******************************************************************************" << std::endl;
+    std::cerr << "---------------------------------" << std::endl;
+    std::cerr << "OS Memory Begin" << std::endl;
+    std::cerr << "---------------------------------" << std::endl;
+    DataBlock *data_block_pointer = dynamic_cast<DataBlock*>(os_blocks[0]);
+    if (!data_block_pointer) {
+        throw std::runtime_error("Data block pointer not found");
+    }
+    long start_of_data_section = data_block_pointer->getValue();
+    long stack_pointer = getRegister(1)->getValue();
+
+
+    std::cerr << mem++ << "." << os_blocks[0]->toString() << " # Start of data section" << std::endl;
+    for (long unsigned int i = 1; i < start_of_data_section; i++) {
+        std::cerr << mem++ << "." << os_blocks[i]->toString() << std::endl;
+    }
+    for (long unsigned int i = start_of_data_section; i < start_of_data_section + 21; i++) {
+        std::cerr << mem++ << "." << os_blocks[i]->toString() << " # Register " << i - start_of_data_section << std::endl;
+    }
+    for (long unsigned int i = start_of_data_section + 21; i < stack_pointer + start_of_data_section; i++) {
+        std::cerr << mem++ << "." << os_blocks[i]->toString() << std::endl;
+    }
+    for (long unsigned int i = stack_pointer + start_of_data_section; i < os_blocks.size(); i++) {
+        std::cerr << mem++ << "." << os_blocks[i]->toString() << " # Stack" << std::endl;
+    }
+
+    std::cerr << "---------------------------------" << std::endl;
+    std::cerr << "OS Memory End" << std::endl;
+    std::cerr << "---------------------------------" << std::endl;
+
+    for (int tn = 0; tn < 10; tn++) {
+        std::cerr << "---------------------------------" << std::endl;
+        std::cerr << "Thread " << tn << " Memory Begin" << std::endl;
+        std::cerr << "---------------------------------" << std::endl;
+        DataBlock *data_block_pointer = dynamic_cast<DataBlock*>(memory_blocks[tn][0]);
+        if (!data_block_pointer) {
+            throw std::runtime_error("Data block pointer not found");
+        }
+        long start_of_data_section = data_block_pointer->getValue();
+        long stack_pointer = getDataBlock(tn, 1)->getValue();
+
+
+        std::cerr << mem++ << "." << memory_blocks[tn][0]->toString() << " # Start of data section" << std::endl;
+        for (long unsigned int i = 1; i < start_of_data_section; i++) {
+            std::cerr << mem++ << "." << memory_blocks[tn][i]->toString() << std::endl;
+        }
+        for (long unsigned int i = start_of_data_section; i < stack_pointer + start_of_data_section; i++) {
+            std::cerr << mem++ << "." << memory_blocks[tn][i]->toString() << std::endl;
+        }
+        for (long unsigned int i = stack_pointer + start_of_data_section; i < memory_blocks[tn].size(); i++) {
+            std::cerr << mem++ << "." << memory_blocks[tn][i]->toString() << " # Stack" << std::endl;
+        }
+        std::cerr << "---------------------------------" << std::endl;
+        std::cerr << "Thread " << tn << " Memory End" << std::endl;
+        std::cerr << "---------------------------------" << std::endl;
+        std::cerr << "******************************************************************************" << std::endl;
+        std::cerr << "Debug 1 End" << std::endl;
+        std::cerr << "******************************************************************************" << std::endl;
+        std::cerr << std::endl;
     }
 }
 

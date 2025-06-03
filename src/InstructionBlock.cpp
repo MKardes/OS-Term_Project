@@ -84,9 +84,16 @@ InstructionBlock::InstructionBlock(std::string instruction): AMemoryBlock(true) 
             break;
         case OpCode::SYSCALL:
             this->opcode2 = InstructionBlock::stringToOpCode(piece2);
+            if (this->opcode2 == OpCode::PRN) {
+                this->operand1 = std::stol(piece3);
+            }
             std::cout << "InstructionBlock created (2 opcodes): " << \
             InstructionBlock::opCodeToString(this->opcode1) << " " << \
-            InstructionBlock::opCodeToString(this->opcode2) << std::endl;
+            InstructionBlock::opCodeToString(this->opcode2);
+            if (this->opcode2 == OpCode::PRN) {
+                std::cout << " " << this->operand1;
+            }
+            std::cout << std::endl;
             break;
         default:
             break;

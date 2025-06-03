@@ -1,6 +1,6 @@
 Begin Data Section
 0 0
-1 959
+1 958
 2 0
 3 0
 4 0
@@ -30,6 +30,7 @@ Begin Data Section
 28 0
 29 0
 End Data Section
+#asfasf
 Begin Instruction Section
 JIF 22 12
 SET 1 16
@@ -69,5 +70,6 @@ POP 6
 POP 6
 PUSH 21
 CALL 1
+SYSCALL PRN 16
 HLT
 End Instruction Section

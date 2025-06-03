@@ -10,7 +10,7 @@
  * @throws std::out_of_range if an instruction operand is out of range
  * @throws std::runtime_error if the file is not found
  */
-CPU::CPU(std::string filename): halted(false), kernel_mode(true) {
+CPU::CPU(std::string filename, int debug_level): halted(false), kernel_mode(true), debug_level(debug_level) {
     std::vector<DataBlock> data_blocks;
     std::vector<InstructionBlock> instruction_blocks;
 
@@ -27,6 +27,13 @@ CPU::CPU(std::string filename): halted(false), kernel_mode(true) {
 
     while (std::getline(file, line)) {
         line_number++;
+
+        // Skip lines that start with # (comments)
+        size_t firstNonSpace = line.find_first_not_of(" \t");
+        if (firstNonSpace != std::string::npos && line[firstNonSpace] == '#') {
+            continue;
+        }
+
         if (line == "Begin Instruction Section") {
             if (isInstructionSection || isDataSection) {
                 throw std::runtime_error("Invalid file format on line " + std::to_string(line_number) + ": " + line);
@@ -93,6 +100,7 @@ CPU::CPU(std::string filename): halted(false), kernel_mode(true) {
         for (int i = thread_number + 1; i <= 10; i++) {
             instruction_blocks.push_back(InstructionBlock("SYSCALL HLT"));
             data_blocks.push_back(DataBlock("0 0"));
+            data_blocks.push_back(DataBlock("0 997"));
 
             memory.fillMemoryBlocks(i, instruction_blocks, data_blocks);
             // memory.printMemoryBlocks(i, 0, 3);
@@ -220,18 +228,24 @@ void CPU::execute_instruction(long tn, InstructionBlock *instruction) {
             // TODO: Implement USER
             break;
         case OpCode::SYSCALL:
-            switch (instruction->getOperand2()) {
+            switch (instruction->getOpcode2()) {
                 case OpCode::PRN:
                     // SYSCALL PRN A: System call to print memory contents
-                    // TODO: Implement PRN
+                    // TODO: Implement: kernel_mode = true;
+                    data_block = memory.getDataBlock(tn, instruction->getOperand1());
+                    value = data_block->getValue();
+                    std::cout << "--------------Value--------------" << std::endl;
+                    std::cout << "                " << value << std::endl;
+                    std::cout << "---------------------------------" << std::endl;
+                    // TODO: Implement: make thread sleep for 100 instructions
                     break;
                 case OpCode::HLT:
                     // SYSCALL HLT: Calls the operting system service. Shuts down the thread 
-                    halted = true;
+                    // TODO: Implement SYSCALL HLT
                     break;
                 case OpCode::YIELD:
                     // SYSCALL YIELD: Yields CPU control to OS for thread scheduling
-                    // TODO: Implement yield
+                    // TODO: Implement SYSCALL YIELD
                     break;
                 default:
                     throw std::runtime_error("Invalid system call");
@@ -254,8 +268,13 @@ void CPU::execute() {
     std::cout << "Stack pointer: " << memory.getRegister(1)->getValue() << std::endl;
     memory.printMemoryBlocks(thread, 995, 1000);
     std::cout << "After execution: " << std::endl;
+
 }
 
 bool CPU::isHalted() {
     return halted;
+}
+
+void CPU::debug() {
+    memory.debug();
 }
