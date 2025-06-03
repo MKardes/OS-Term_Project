@@ -25,6 +25,9 @@ private:
     //   -- 2: system call result
     //   -- 3: Number of instructions executed so far
     //   -- 4: Thread number executing 0 for OS, 1 for thread 1, etc.
+    //   -- 5: Starting time(instruction) of that thread
+    //   -- 6: Number of instructions executed so far (for that thread)
+    //   -- 7: The state of the thread (ready, blocked, running) -> (rdy:0, blc:1, run:2)
     // * 21 Other datas
 
     // Thread Memory:
