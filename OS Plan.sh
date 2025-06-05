@@ -10,19 +10,68 @@ OS job:
 #  The state of the thread (ready, blocked, running)                                                -> will be written to reg[7] (rdy:0, blc:1, run:2)
 #  Start time (instruction) of the block (100 inst etc.)                                            -> will be written to reg[8] (reg[3] - reg[8] > 100 ? blc->rdy: blc->blc)
 
-# Starts from OS's 30'th memory block 10 blocs foreach
+# Thread Tables:
+#
+# thread_table 0: [21] = 66  # (0 + 21) // end of the thread_tables
+# thread_table 1: [22] = 91  # (1 + 21)
+# thread_table 2: [23] = 116  # (2 + 21)
+# thread_table 3: [24] = 141  # (3 + 21)
+# thread_table 4: [25] = 166  # (4 + 21)
+# thread_table 5: [26] = 191  # (5 + 21)
+# thread_table 6: [27] = 216  # (6 + 21)
+# thread_table 7: [28] = 241  # (7 + 21)
+# thread_table 8: [29] = 266  # (8 + 21)
+# thread_table 9: [30] = 291  # (9 + 21)
+# thread_table 10: [31] = 316  # (10 + 21)
+#
+# thread_tables size is: [50-324]
+#
+# Syscaller thread: [33]
+#
+# empty memory blocks: [🗑️32], [🗑️34], [35-49], [325-329] 🗑️[330-347], [348-397]
+# Round Robin Scheduler:
+#
+# head of the round robin scheduler:             [398]
+# tail of the round robin scheduler:             [399]
+# first thread number on round robin scheduler:  [400]
+# the address of the next of first thread:       [401]
+# second thread number on round robin scheduler: [402]
+# the address of the next of second thread:      [403]
+# third thread number on round robin scheduler:  [404]
+# the address of the next of third thread:       [405]
+# fourth thread number on round robin scheduler: [406]
+# the address of the next of fourth thread:      [407]
+# fifth thread number on round robin scheduler:  [408]
+# the address of the next of fifth thread:       [409]
+# sixth thread number on round robin scheduler:  [410]
+# the address of the next of sixth thread:       [411]
+# seventh thread number on round robin scheduler:[412]
+# the address of the next of seventh thread:     [413]
+# eighth thread number on round robin scheduler: [414]
+# the address of the next of eighth thread:      [415]
+# ninth thread number on round robin scheduler:  [416]
+# the address of the next of ninth thread:       [417]
+# tenth thread number on round robin scheduler:  [418]
+# the address of the next of tenth thread:       [419]
+#
+# round robin scheduler size is: [398-419]
+#
+
 thread_tables:
-  thread_table os: # [30-39]
+  thread_table os: # [50-74]
+    1 1 1 1 1 1 // all the registers
+  thread_table 1:  # [75-99]
     1 1 1 1 1 1
-  thread_table 1:  # [40-49]
+  thread_table 2:  # [100-124]
     1 1 1 1 1 1
-  thread_table 2:  # [50-59]
-    1 1 1 1 1 1
-  thread_table 3:  # [60-69]
+  thread_table 3:  # [125-149]
     1 1 1 1 1 1
     . . .
-  thread_table 10: # [120-129]
+  thread_table 10: # [300-324]
     1 1 1 1 1 1
+
+    0  1  2  3   4   5   6   7   8   9   10
+    25 50 75 100 125 150 175 200 225 250 275
 
 EXECUTE [head]        # -'Head'.content will be executed (T6)
 Set [Head] 94         # -put address T6 to a temp var

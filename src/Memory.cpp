@@ -81,6 +81,29 @@ void Memory::fillMemoryBlocks(int tn, std::vector<InstructionBlock> &instruction
             }
             // TODO: it could be addressed or without address for stack examine again
         }
+        
+        DataBlock *data_block_pointer = dynamic_cast<DataBlock*>(os_blocks[0]);
+        if (!data_block_pointer) {
+            throw std::runtime_error("Data block pointer not found");
+        }
+        long start_of_data_section = data_block_pointer->getValue();
+
+        if (os_blocks[start_of_data_section + tn + 1 + 21] != nullptr) {
+            DataBlock *data_block_pointer = dynamic_cast<DataBlock*>(os_blocks[start_of_data_section + tn + 1 + 21]);
+            if (data_block_pointer) {
+                long end_of_the_thread_table = data_block_pointer->getValue();
+                DataBlock *os_pc = dynamic_cast<DataBlock*>(os_blocks[end_of_the_thread_table - 16]);
+                DataBlock *memory_pc = dynamic_cast<DataBlock*>(memory_blocks[tn][data_block_start]);
+                if (os_pc && memory_pc) {
+                    os_pc->setValue(memory_pc->getValue());
+                }
+                DataBlock *os_sp = dynamic_cast<DataBlock*>(os_blocks[end_of_the_thread_table - 15]);
+                DataBlock *memory_sp = dynamic_cast<DataBlock*>(memory_blocks[tn][data_block_start + 1]);
+                if (os_sp && memory_sp) {
+                    os_sp->setValue(memory_sp->getValue());
+                }
+            }
+        }
     }
 
     instruction_blocks.clear();
@@ -126,21 +149,29 @@ void Memory::debug() {
         throw std::runtime_error("Data block pointer not found");
     }
     long start_of_data_section = data_block_pointer->getValue();
-    long stack_pointer = getRegister(1)->getValue();
+    long stack_pointer = getRegister(Memory::STACK_POINTER)->getValue();
 
 
     std::cerr << mem++ << "." << os_blocks[0]->toString() << " # Start of data section" << std::endl;
     for (long unsigned int i = 1; i < start_of_data_section; i++) {
-        std::cerr << mem++ << "." << os_blocks[i]->toString() << std::endl;
+        if (os_blocks[i]) {
+            std::cerr << mem++ << "." << os_blocks[i]->toString() << std::endl;
+        }
     }
     for (long unsigned int i = start_of_data_section; i < start_of_data_section + 21; i++) {
-        std::cerr << mem++ << "." << os_blocks[i]->toString() << " # Register " << i - start_of_data_section << std::endl;
+        if (os_blocks[i]) {
+            std::cerr << mem++ << "." << os_blocks[i]->toString() << " # Register " << i - start_of_data_section << std::endl;
+        }
     }
-    for (long unsigned int i = start_of_data_section + 21; i < stack_pointer + start_of_data_section; i++) {
-        std::cerr << mem++ << "." << os_blocks[i]->toString() << std::endl;
+    for (long unsigned int i = start_of_data_section + 21; i < stack_pointer + start_of_data_section && i < os_blocks.size(); i++) {
+        if (os_blocks[i]) {
+            std::cerr << mem++ << "." << os_blocks[i]->toString() << std::endl;
+        }
     }
     for (long unsigned int i = stack_pointer + start_of_data_section; i < os_blocks.size(); i++) {
-        std::cerr << mem++ << "." << os_blocks[i]->toString() << " # Stack" << std::endl;
+        if (os_blocks[i]) {
+            std::cerr << mem++ << "." << os_blocks[i]->toString() << " # Stack" << std::endl;
+        }
     }
 
     std::cerr << "---------------------------------" << std::endl;
@@ -329,11 +360,13 @@ InstructionBlock *Memory::getInstructionBlock(int tn, int n) {
 }
 
 InstructionBlock *Memory::getNextInstruction(int tn) {
-    DataBlock *pg_reg = getRegister(0); // Get first register from 0-20 of os_section
+    DataBlock *pg_reg = getRegister(Memory::PROGRAM_COUNTER); // Get first register from 0-20 of os_section
     if (!pg_reg) {
         throw std::runtime_error("Program counter register not found");
     }
 
+    std::cout << "Program counter: " << pg_reg->getValue() << std::endl;
+    std::cout << "Thread number: " << tn << std::endl;
     InstructionBlock *instruction_block = getInstructionBlock(tn, pg_reg->getValue()); 
     if (!instruction_block) {
         throw std::runtime_error("Instruction block not found");

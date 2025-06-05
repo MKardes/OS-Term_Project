@@ -17,6 +17,8 @@ public:
     void setDataBlock(long address, long value);
     long getAddress() const;
     long getValue() const;
+    void setAddress(long addr);
+    void setValue(long value);
 };
 
 #endif

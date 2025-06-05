@@ -1,6 +1,6 @@
 # Compiler settings
 CXX = g++
-CXXFLAGS = -Wall -Wextra -g -I include
+CXXFLAGS = -Wextra -g -I include
 
 # Source files
 SRCS = src/main.cpp src/CPU.cpp src/Memory.cpp src/AMemoryBlock.cpp src/DataBlock.cpp src/InstructionBlock.cpp

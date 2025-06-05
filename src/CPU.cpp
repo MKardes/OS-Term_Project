@@ -109,7 +109,7 @@ CPU::CPU(std::string filename, int debug_level): halted(false), kernel_mode(true
 }
 
 int CPU::getProgramCounter() {
-    return memory.getRegister(0)->getValue();
+    return memory.getRegister(CPU::PROGRAM_COUNTER)->getValue();
 }
 
 void CPU::execute_instruction(long tn, InstructionBlock *instruction) {
@@ -121,6 +121,9 @@ void CPU::execute_instruction(long tn, InstructionBlock *instruction) {
     long inner_address_1 = 0;
     long inner_address_2 = 0;
     long stack_pointer = 0;
+    long old_pc = 0;
+    long user_tn = 0;
+    // long user_pc = 0;
 
     switch (instruction->getOpcode1()) {
         case OpCode::SET:
@@ -182,7 +185,7 @@ void CPU::execute_instruction(long tn, InstructionBlock *instruction) {
             break;
         case OpCode::PUSH:
             // PUSH A: Push memory value onto stack
-            stack_pointer = memory.getRegister(1)->getValue();
+            stack_pointer = memory.getRegister(CPU::STACK_POINTER)->getValue();
 
             data_block = memory.getDataBlock(tn, instruction->getOperand1());
             value = data_block->getValue();
@@ -192,7 +195,7 @@ void CPU::execute_instruction(long tn, InstructionBlock *instruction) {
             break;
         case OpCode::POP:
             // POP A: Pop value from stack into memory
-            stack_pointer = memory.getRegister(1)->getValue();
+            stack_pointer = memory.getRegister(CPU::STACK_POINTER)->getValue();
             stack_pointer = stack_pointer + 1;
 
             data_block = memory.getDataBlock(tn, stack_pointer);
@@ -203,7 +206,7 @@ void CPU::execute_instruction(long tn, InstructionBlock *instruction) {
             break;
         case OpCode::CALL:
             // CALL C: Call subroutine at specified instruction
-            stack_pointer = memory.getRegister(1)->getValue();
+            stack_pointer = memory.getRegister(CPU::STACK_POINTER)->getValue();
             memory.setDataBlock(tn, stack_pointer, computed_pg); // PUSH RETURN ADDRESS TO STACK
             memory.setRegister(1, stack_pointer - 1);
 
@@ -211,7 +214,7 @@ void CPU::execute_instruction(long tn, InstructionBlock *instruction) {
             break;
         case OpCode::RET:
             // RET: Return from subroutine
-            stack_pointer = memory.getRegister(1)->getValue();
+            stack_pointer = memory.getRegister(CPU::STACK_POINTER)->getValue();
             stack_pointer = stack_pointer + 1;
             data_block = memory.getDataBlock(tn, stack_pointer);
             value = data_block->getValue(); // POP RETURN ADDRESS FROM STACK
@@ -225,31 +228,46 @@ void CPU::execute_instruction(long tn, InstructionBlock *instruction) {
             break;
         case OpCode::USER:
             // USER A: Switch to user mode and jump to specified address
-            // TODO: Implement USER
+            data_block = memory.getDataBlock(tn, instruction->getOperand1());
+            computed_pg = data_block->getValue();
+
+            user_tn = memory.getRegister(CPU::THREAD_NUMBER_SWITCH)->getValue();
+
+            memory.setRegister(CPU::THREAD_NUMBER, user_tn);    // CHANGE MODE TO that thread
+            // memory.setRegister(CPU::PROGRAM_COUNTER, user_pc);  // CHANGE PC for that thread
+
+            kernel_mode = false;
             break;
         case OpCode::SYSCALL:
+            kernel_mode = true;
+            old_pc = memory.getRegister(CPU::PROGRAM_COUNTER)->getValue();
+            memory.setRegister(CPU::THREAD_TEMP_PC_SWITCH, old_pc);
+
             switch (instruction->getOpcode2()) {
-                case OpCode::PRN:
-                    // SYSCALL PRN A: System call to print memory contents
-                    // TODO: Implement: kernel_mode = true;
-                    data_block = memory.getDataBlock(tn, instruction->getOperand1());
-                    value = data_block->getValue();
-                    std::cout << "--------------Value--------------" << std::endl;
-                    std::cout << "                " << value << std::endl;
-                    std::cout << "---------------------------------" << std::endl;
-                    // TODO: Implement: make thread sleep for 100 instructions
-                    break;
                 case OpCode::HLT:
                     // SYSCALL HLT: Calls the operting system service. Shuts down the thread 
-                    // TODO: Implement SYSCALL HLT
+                    memory.setRegister(CPU::SYSCALL_TYPE, 0);
                     break;
                 case OpCode::YIELD:
                     // SYSCALL YIELD: Yields CPU control to OS for thread scheduling
-                    // TODO: Implement SYSCALL YIELD
+                    memory.setRegister(CPU::SYSCALL_TYPE, 1);
+                    break;
+                case OpCode::PRN:
+                    // SYSCALL PRN A: System call to print memory contents
+                    memory.setRegister(CPU::SYSCALL_TYPE, 2);
+                    data_block = memory.getDataBlock(tn, instruction->getOperand1());
+                    value = data_block->getValue();
+                    std::cout << "--------------Value--------------" << std::endl;
+                    std::cout << "               " << value << std::endl;
+                    std::cout << "---------------------------------" << std::endl;
+                    // TODO: Implement: make thread sleep for 100 instructions
                     break;
                 default:
                     throw std::runtime_error("Invalid system call");
             }
+
+            computed_pg = 0;
+            memory.setRegister(CPU::THREAD_NUMBER, 0); // Switch to OS thread
             break;
         default:
             throw std::runtime_error("Invalid instruction");
@@ -259,18 +277,24 @@ void CPU::execute_instruction(long tn, InstructionBlock *instruction) {
 }
 
 void CPU::execute() {
-    InstructionBlock *instruction = memory.getNextInstruction(0);
-    
-    long thread = memory.getRegister(4)->getValue(); // Get the thread number
-    execute_instruction(thread, instruction);
-    std::cout << "After execution: " << std::endl;
-    memory.printMemoryBlocks(thread, 176, 200);
-    memory.printMemoryBlocks(thread, 278, 280);
-    memory.printMemoryBlocks(thread, 378, 380);
-    // std::cout << "Stack pointer: " << memory.getRegister(1)->getValue() << std::endl;
-    // memory.printMemoryBlocks(thread, 995, 1000);
-    std::cout << "After execution: " << std::endl;
+    long thread = memory.getRegister(CPU::THREAD_NUMBER)->getValue(); // Get the thread number,
 
+    InstructionBlock *instruction = memory.getNextInstruction(thread); 
+    execute_instruction(thread, instruction);
+
+    // std::cout << "After execution: " << std::endl;
+    // memory.printMemoryBlocks(thread, 125, 185);
+    // memory.printMemoryBlocks(thread, 593, 601);
+    // // memory.printMemoryBlocks(thread, 278, 280);
+    // // memory.printMemoryBlocks(thread, 378, 380);
+    // // std::cout << "Stack pointer: " << memory.getRegister(CPU::STACK_POINTER)->getValue() << std::endl;
+    // // memory.printMemoryBlocks(thread, 995, 1000);
+    // std::cout << "After execution: " << std::endl;
+
+    long executed_instructions = memory.getRegister(CPU::EXECUTED_INSTRUCTIONS)->getValue();
+    memory.setRegister(CPU::EXECUTED_INSTRUCTIONS, executed_instructions + 1);
+    long executed_instructions_thread = memory.getRegister(CPU::EXECUTED_INSTRUCTIONS_THREAD)->getValue();
+    memory.setRegister(CPU::EXECUTED_INSTRUCTIONS_THREAD, executed_instructions_thread + 1);
 }
 
 bool CPU::isHalted() {

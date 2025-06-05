@@ -32,11 +32,11 @@ Begin Data Section
 End Data Section
 Begin Instruction Section
 
-# ROUND ROBIN REMOVE FUNCTION BEGIN
+# ROUND ROBIN REMOVE FUNCTION BEGIN (thread_number)
 0 POP 500    # for return address
 1 POP 14     # [14] = tn thread that will be removed from round robin
 2 PUSH 500   # repush the return address
-3 SET 0 20   # [20] = 0 will be used to jump
+3 SET 0 17   # [17] = 0 will be used to jump
 4 CPY 98 16  # [16] = [98] assign to 16 the heading thread number
 5 CPYI 16 17 # [17] = [[16]] 
 6 CPYI 16 19 # [19] = [[16]] 
@@ -48,9 +48,9 @@ Begin Instruction Section
 12 ADD 16 1   # [16] = [16] + 1 (101)
 13 CPYI 16 16 # [16] = [[16]]
 14 JIF 17 16
-15 JIF 20 5
+15 JIF 17 5
 16 JIF 18 18
-17 JIF 20 5
+17 JIF 17 5
 
 # If the thread was FOUND
 18 JIF 13 21
@@ -67,14 +67,14 @@ Begin Instruction Section
 26 CPYI 201 203  # [203] = [[201]] = 104
 27 CPYI2 202 201 # [[201]] = [[202]] = 0 # 8->next = 0
 28 JIF 203 30 # if it is tail
-29 JIF 20 37 # if it is not tail
+29 JIF 17 37 # if it is not tail
 
 
 # change tail to [200] - 1 (101 - 1)
 30 CPY 200 204   # [204] = [200] = 101
 31 ADD 204 -1    # [204] = 100
 32 CPY 204 99
-33 JIF 20 37
+33 JIF 17 37
 
 # change head to head -> next if the removed one is first one
 34 CPYI 201 98 # [head] = [101]
