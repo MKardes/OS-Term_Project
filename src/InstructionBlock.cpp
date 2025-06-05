@@ -53,10 +53,12 @@ OpCode InstructionBlock::stringToOpCode(const std::string& str) {
  */
 InstructionBlock::InstructionBlock(std::string instruction): AMemoryBlock(true) {
     std::stringstream ss(instruction);
-    std::string piece1, piece2, piece3, piece4;
-    ss >> piece1 >> piece2 >> piece3 >> piece4;
+    std::string piece1, piece2, piece3, piece4, piece5;
+    //piece1 is address
+    ss >> piece1 >> piece2 >> piece3 >> piece4 >> piece5;
+    this->address = std::stol(piece1);
 
-    this->opcode1 = InstructionBlock::stringToOpCode(piece1);
+    this->opcode1 = InstructionBlock::stringToOpCode(piece2);
     switch (this->opcode1) {
         case OpCode::SET:
         case OpCode::CPY:
@@ -66,8 +68,8 @@ InstructionBlock::InstructionBlock(std::string instruction): AMemoryBlock(true) 
         case OpCode::ADDI:
         case OpCode::SUBI:
         case OpCode::JIF:
-            this->operand1 = std::stol(piece2);
-            this->operand2 = std::stol(piece3);
+            this->operand1 = std::stol(piece3);
+            this->operand2 = std::stol(piece4);
             std::cout << "InstructionBlock created (2 operands): " << \
             InstructionBlock::opCodeToString(this->opcode1) << " " << \
             this->operand1 << " " << \
@@ -77,15 +79,15 @@ InstructionBlock::InstructionBlock(std::string instruction): AMemoryBlock(true) 
         case OpCode::POP:
         case OpCode::CALL:
         case OpCode::USER:
-            this->operand1 = std::stol(piece2);
+            this->operand1 = std::stol(piece3);
             std::cout << "InstructionBlock created (1 operand): " << \
             InstructionBlock::opCodeToString(this->opcode1) << " " << \
             this->operand1 << std::endl;
             break;
         case OpCode::SYSCALL:
-            this->opcode2 = InstructionBlock::stringToOpCode(piece2);
+            this->opcode2 = InstructionBlock::stringToOpCode(piece3);
             if (this->opcode2 == OpCode::PRN) {
-                this->operand1 = std::stol(piece3);
+                this->operand1 = std::stol(piece4);
             }
             std::cout << "InstructionBlock created (2 opcodes): " << \
             InstructionBlock::opCodeToString(this->opcode1) << " " << \
@@ -102,7 +104,7 @@ InstructionBlock::InstructionBlock(std::string instruction): AMemoryBlock(true) 
 
 std::string InstructionBlock::toString() const {
     std::stringstream ss;
-    ss << "InstructionBlock: " << opCodeToString(opcode1);
+    ss << "InstructionBlock[" << address << "] = " << opCodeToString(opcode1);
     
     switch (opcode1) {
         case SET:
@@ -129,6 +131,10 @@ std::string InstructionBlock::toString() const {
     }
     
     return ss.str();
+}
+
+long InstructionBlock::getAddress() {
+    return address;
 }
 
 OpCode InstructionBlock::getOpcode1() {

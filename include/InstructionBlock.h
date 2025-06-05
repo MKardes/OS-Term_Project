@@ -25,6 +25,7 @@ enum OpCode {
 
 class InstructionBlock: public AMemoryBlock {
 private:
+    long address;
     OpCode opcode1;
     OpCode opcode2;
     long operand1;
@@ -35,6 +36,7 @@ public:
     static OpCode stringToOpCode(const std::string& str);
     static std::string opCodeToString(OpCode op);
     std::string toString() const override;
+    long getAddress();
     OpCode getOpcode1();
     OpCode getOpcode2();
     long getOperand1();

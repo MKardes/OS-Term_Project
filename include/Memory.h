@@ -35,7 +35,6 @@ public:
     Memory();
     ~Memory();
     void fillMemoryBlocks(int tn, std::vector<InstructionBlock> &instruction_blocks, std::vector<DataBlock> &data_blocks);
-    void printMemoryBlocks(long unsigned int start = 0, long unsigned int end = 1000);
     void printMemoryBlocks(int tn, long unsigned int start = 0, long unsigned int end = 1000);
     void debug();
     DataBlock *getRegister(int address);

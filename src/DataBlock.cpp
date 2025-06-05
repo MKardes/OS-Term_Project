@@ -25,6 +25,10 @@ void DataBlock::setDataBlock(long address, long value) {
     this->value = value;
 }
 
+long DataBlock::getAddress() const {
+    return address;
+}
+
 long DataBlock::getValue() const {
     return value;
 }

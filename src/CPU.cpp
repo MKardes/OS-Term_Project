@@ -30,7 +30,7 @@ CPU::CPU(std::string filename, int debug_level): halted(false), kernel_mode(true
 
         // Skip lines that start with # (comments)
         size_t firstNonSpace = line.find_first_not_of(" \t");
-        if (firstNonSpace != std::string::npos && line[firstNonSpace] == '#') {
+        if (firstNonSpace == std::string::npos || line[firstNonSpace] == '#') {
             continue;
         }
 
@@ -98,7 +98,7 @@ CPU::CPU(std::string filename, int debug_level): halted(false), kernel_mode(true
         std::cout << 10 - thread_number << " threads will be created with SYSCALL HLT" << std::endl;
 
         for (int i = thread_number + 1; i <= 10; i++) {
-            instruction_blocks.push_back(InstructionBlock("SYSCALL HLT"));
+            instruction_blocks.push_back(InstructionBlock("0 SYSCALL HLT"));
             data_blocks.push_back(DataBlock("0 0"));
             data_blocks.push_back(DataBlock("0 997"));
 

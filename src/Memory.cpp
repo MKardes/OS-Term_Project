@@ -22,57 +22,69 @@ void Memory::fillMemoryBlocks(int tn, std::vector<InstructionBlock> &instruction
     if (is_os) {
         // It is OS's data
         os_blocks = std::vector<AMemoryBlock*>(1000, nullptr);
+        int max_inst_addr = -1;
 
-        int data_block_size = data_blocks.size();
-        int data_block_start = instruction_blocks.size() + 1;
+        for (int i = 1; i <= instruction_blocks.size(); i++) {
+            int addr = instruction_blocks[i - 1].getAddress();
+
+            if (addr > 500) throw std::runtime_error("Instruction address is out of bounds: " + std::to_string(addr));
+            if (addr > max_inst_addr) max_inst_addr = addr;
+
+            os_blocks[addr + 1] = new InstructionBlock(instruction_blocks[i - 1]); // For instruction section
+        }
+
+        int data_block_start = max_inst_addr + 2; // +1 for instruction section, +1 for data_block_start
         os_blocks[0] = new DataBlock(0, data_block_start);
 
-        for (int i = 1; i < data_block_start; i++) {
-            os_blocks[i] = new InstructionBlock(instruction_blocks[i - 1]); // For instruction section
-        }
+        for (int i = 0; i < data_blocks.size(); i++) {
+            int addr = data_blocks[i].getAddress();
 
-        for (int i = 0; i < data_block_size; i++) {
-            os_blocks[data_block_start + i] = new DataBlock(data_blocks[i]); // For data section
+            if (data_block_start + addr > 999) throw std::runtime_error("DataBlock address is out of bounds: " + std::to_string(addr));
+
+            os_blocks[data_block_start + addr] = new DataBlock(data_blocks[i]); // For data section
         }
         
-        for (int i = data_block_size; data_block_start + i < 1000; i++) {
-            os_blocks[data_block_start + i] = new DataBlock(i, 0);/* new DataBlock();  */ // For stack pointer 
+        for (int i = data_block_start; i < 1000; i++) {
+            if (os_blocks[i] == nullptr) {
+                os_blocks[i] = new DataBlock(i - data_block_start, 0);/* new DataBlock();  */ // For stack pointer 
+            }
             // TODO: it could be addressed or without address for stack examine again
         }
     } else {
         // It is a thread's data
         memory_blocks[tn] = std::vector<AMemoryBlock*>(1000, nullptr);
+        int max_inst_addr = -1;
 
-        int data_block_size = data_blocks.size();
-        int data_block_start = instruction_blocks.size() + 1;
+        for (int i = 1; i <= instruction_blocks.size(); i++) {
+            int addr = instruction_blocks[i - 1].getAddress();
+
+            if (addr > 500) throw std::runtime_error("Instruction address is out of bounds: " + std::to_string(addr));
+            if (addr > max_inst_addr) max_inst_addr = addr;
+
+            memory_blocks[tn][addr + 1] = new InstructionBlock(instruction_blocks[i - 1]); // For instruction section
+        }
+
+        int data_block_start = max_inst_addr + 2; // +1 for instruction section, +1 for data_block_start
         memory_blocks[tn][0] = new DataBlock(0, data_block_start);
 
-        for (int i = 1; i < data_block_start; i++) {
-            memory_blocks[tn][i] = new InstructionBlock(instruction_blocks[i - 1]); // For instruction section
+        for (int i = 0; i < data_blocks.size(); i++) {
+            int addr = data_blocks[i].getAddress();
+
+            if (data_block_start + addr > 999) throw std::runtime_error("DataBlock address is out of bounds: " + std::to_string(addr));
+
+            memory_blocks[tn][data_block_start + addr] = new DataBlock(data_blocks[i]); // For data section
         }
 
-        for (int i = 0; i < data_block_size; i++) {
-            memory_blocks[tn][data_block_start + i] = new DataBlock(data_blocks[i]); // For data section
-        }
-
-        for (int i = data_block_size; data_block_start + i < 1000; i++) {
-            memory_blocks[tn][data_block_start + i] = new DataBlock(i, 0);/*  new DataBlock();  */ // For stack pointer 
+        for (int i = data_block_start; i < 1000; i++) {
+            if (memory_blocks[tn][i] == nullptr) {
+                memory_blocks[tn][i] = new DataBlock(i - data_block_start, 0);/* new DataBlock();  */ // For stack pointer 
+            }
             // TODO: it could be addressed or without address for stack examine again
         }
     }
 
     instruction_blocks.clear();
     data_blocks.clear();
-}
-
-void Memory::printMemoryBlocks(long unsigned int start, long unsigned int end) {
-    std::cout << "Memory blocks: " << start << " " << end << std::endl;
-    for (long unsigned int i = 0; i < memory_blocks.size(); i++) {
-        std::cout << "Thread " << i << ": " << std::endl;
-        for (long unsigned int j = start; j < memory_blocks[i].size() && j < end; j++) {
-            std::cout << memory_blocks[i][j]->toString() << std::endl;
-        }
-    }
 }
 
 void Memory::printMemoryBlocks(int tn, long unsigned int start, long unsigned int end) {
@@ -82,15 +94,21 @@ void Memory::printMemoryBlocks(int tn, long unsigned int start, long unsigned in
     if (is_os) {
         std::cout << "Registers: ";
         for (long unsigned int i = 0; i < 21; i++) {
-            std::cout << getRegister(i)->toShortString() << " ";
+            if (getRegister(i)) {
+                std::cout << getRegister(i)->toShortString() << " ";
+            }
         }
         std::cout << std::endl;
         for (long unsigned int i = start; i < os_blocks.size() && i < end; i++) {
-            std::cout << os_blocks[i]->toString() << std::endl;
+            if (os_blocks[i]) {
+                std::cout << os_blocks[i]->toString() << std::endl;
+            }
         }
     } else {
         for (long unsigned int i = start; i < memory_blocks[tn].size() && i < end; i++) {
-            std::cout << memory_blocks[tn][i]->toString() << std::endl;
+            if (memory_blocks[tn][i]) {
+                std::cout << memory_blocks[tn][i]->toString() << std::endl;
+            }
         }
     }
 }

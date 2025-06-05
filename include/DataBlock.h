@@ -15,6 +15,7 @@ public:
     std::string toString() const override;
     std::string toShortString() const;
     void setDataBlock(long address, long value);
+    long getAddress() const;
     long getValue() const;
 };
 
