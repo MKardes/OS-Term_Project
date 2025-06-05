@@ -264,9 +264,11 @@ void CPU::execute() {
     long thread = memory.getRegister(4)->getValue(); // Get the thread number
     execute_instruction(thread, instruction);
     std::cout << "After execution: " << std::endl;
-    memory.printMemoryBlocks(thread, 50, 80);
-    std::cout << "Stack pointer: " << memory.getRegister(1)->getValue() << std::endl;
-    memory.printMemoryBlocks(thread, 995, 1000);
+    memory.printMemoryBlocks(thread, 176, 200);
+    memory.printMemoryBlocks(thread, 278, 280);
+    memory.printMemoryBlocks(thread, 378, 380);
+    // std::cout << "Stack pointer: " << memory.getRegister(1)->getValue() << std::endl;
+    // memory.printMemoryBlocks(thread, 995, 1000);
     std::cout << "After execution: " << std::endl;
 
 }
@@ -278,3 +280,30 @@ bool CPU::isHalted() {
 void CPU::debug() {
     memory.debug();
 }
+
+// DataBlock[200] = 0
+// DataBlock[201] = 101    tail = 100, tail.next 101, [tail.next] 102
+
+
+// CPYI2 201 200 # [[200]] = [[201]] = 104
+// SET 20 202
+// CPYI 201 203  # [203] = [[201]] = 104
+// CPYI2 202 201 # [[201]] = [[202]] = 0
+// JIF 203 X
+
+// #change tail to [200] - 1 (101 - 1)
+// X CPY 200 204 # [204] = [200] = 101
+// ADD 204 -1    # [204] = 100
+// CPY 204 99
+// DataBlock[200] = 101 
+// DataBlock[201] = 103 [101] = [103] && [103] = 0
+
+// DataBlock[200] = 103 
+// DataBlock[201] = 105 [103] = [105] && [105] = 0
+
+// .
+// .
+// .
+
+// DataBlock[200] = 119
+// DataBlock[201] = 121 [119] = [121] && [121] = 0 ==>> jif 121 X (if it is tail)

@@ -24,38 +24,71 @@ thread_tables:
   thread_table 10: # [120-129]
     1 1 1 1 1 1
 
+EXECUTE [head]        # -'Head'.content will be executed (T6)
+Set [Head] 94         # -put address T6 to a temp var
+set [94 + 1\] head    # -'Head' will be T6 -> next
+set [94] ([tail] + 1) # -'Tail'->next will be 'T6'
+set [94] [tail]       # -'Tail' will be the address of T6
 
+98 100 # head
+99 120 # tail
+
+100 0
+101 102
+102 1
+103 104
+104 2
+105 106
+106 3
+107 108
+108 4
+109 110
+110 5
+111 112
+112 6
+113 114
+114 7
+115 116
+116 8
+117 118
+118 9
+119 120
+120 10
+121 0
+
+head: [98] 100
+tail: [99] 120
 round robin scheduler:
   [100] 0 thread_id
   [101] 102 # next
   # ---------------
   [102] 1 thread_id
-  [103] 120 # next
+  [103] 104 # next
   # ---------------
   [104] 2 thread_id
-  [105] 110 # next
+  [105] 106 # next
   # ---------------
   [106] 3 thread_id
-  [107] 104 # next
+  [107] 108 # next
   # ---------------
   [108] 4 thread_id
-  [109] 100 # next
+  [109] 110 # next
   # ---------------
   [110] 5 thread_id
-  [111] 114 # next
+  [111] 112 # next
   # ---------------
   [112] 6 thread_id
-  [113] 108 # next
+  [113] 114 # next
   # ---------------
   [114] 7 thread_id
-  [115] 118 # next
+  [115] 116 # next
   # ---------------
   [116] 8 thread_id
-  [117] 112 # next
+  [117] 118 # next
   # ---------------
   [118] 9 thread_id
-  [119] 116 # next
+  [119] 120 # next
   # ---------------
   [120] 10 thread_id
-  [121] 106 # next
+  [121] 0 # next
   # ---------------

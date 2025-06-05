@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
 
             /* DEBUG 1 */
             if (debug_level == 1 || debug_level == 2) {
-                myCpu.debug();
+                // myCpu.debug();
             }
 
             if (debug_level == 2 && !myCpu.isHalted()) {
