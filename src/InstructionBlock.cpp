@@ -70,7 +70,7 @@ InstructionBlock::InstructionBlock(std::string instruction): AMemoryBlock(true) 
         case OpCode::JIF:
             this->operand1 = std::stol(piece3);
             this->operand2 = std::stol(piece4);
-            // std::cout << "InstructionBlock created (2 operands): " << \
+            std::cout << "InstructionBlock created (2 operands): " << \
             InstructionBlock::opCodeToString(this->opcode1) << " " << \
             this->operand1 << " " << \
             this->operand2 << std::endl;
@@ -80,7 +80,7 @@ InstructionBlock::InstructionBlock(std::string instruction): AMemoryBlock(true) 
         case OpCode::CALL:
         case OpCode::USER:
             this->operand1 = std::stol(piece3);
-            // std::cout << "InstructionBlock created (1 operand): " << \
+            std::cout << "InstructionBlock created (1 operand): " << \
             InstructionBlock::opCodeToString(this->opcode1) << " " << \
             this->operand1 << std::endl;
             break;
@@ -89,13 +89,13 @@ InstructionBlock::InstructionBlock(std::string instruction): AMemoryBlock(true) 
             if (this->opcode2 == OpCode::PRN) {
                 this->operand1 = std::stol(piece4);
             }
-            // std::cout << "InstructionBlock created (2 opcodes): " << \
+            std::cout << "InstructionBlock created (2 opcodes): " << \
             InstructionBlock::opCodeToString(this->opcode1) << " " << \
             InstructionBlock::opCodeToString(this->opcode2);
             if (this->opcode2 == OpCode::PRN) {
-                // std::cout << " " << this->operand1;
+                std::cout << " " << this->operand1;
             }
-            // std::cout << std::endl;
+            std::cout << std::endl;
             break;
         default:
             break;

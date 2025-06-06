@@ -283,7 +283,13 @@ void CPU::execute() {
     execute_instruction(thread, instruction);
 
     // std::cout << "After execution: " << std::endl;
-    // memory.printMemoryBlocks(thread, 125, 185);
+    memory.printMemoryBlocks(thread, 34 + 340, 35 + 340);
+    memory.printMemoryBlocks(thread, 330 + 340, 350 + 340);
+    memory.printMemoryBlocks(thread, 500 + 340, 508 + 340);
+    memory.printMemoryBlocks(thread, 398 + 340, 420 + 340);
+    // memory.printMemoryBlocks(thread, 595 + 340, 601 + 340);
+
+    // memory.printMemoryBlocks(thread, 0, 1000);
     // memory.printMemoryBlocks(thread, 593, 601);
     // // memory.printMemoryBlocks(thread, 278, 280);
     // // memory.printMemoryBlocks(thread, 378, 380);
