@@ -7,7 +7,7 @@ DataBlock::DataBlock(std::string instruction): AMemoryBlock(false) {
     ss >> address >> value;
     this->address = std::stol(address);
     this->value = std::stol(value);
-    std::cout << "DataBlock created: " << this->address << ": " << this->value << std::endl;
+    // std::cout << "DataBlock created: " << this->address << ": " << this->value << std::endl;
 }
 
 DataBlock::DataBlock(long address, long value): AMemoryBlock(false) {

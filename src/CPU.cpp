@@ -260,7 +260,6 @@ void CPU::execute_instruction(long tn, InstructionBlock *instruction) {
                     std::cout << "--------------Value--------------" << std::endl;
                     std::cout << "               " << value << std::endl;
                     std::cout << "---------------------------------" << std::endl;
-                    // TODO: Implement: make thread sleep for 100 instructions
                     break;
                 default:
                     throw std::runtime_error("Invalid system call");
@@ -283,11 +282,16 @@ void CPU::execute() {
     execute_instruction(thread, instruction);
 
     // std::cout << "After execution: " << std::endl;
-    memory.printMemoryBlocks(thread, 34 + 340, 35 + 340);
-    memory.printMemoryBlocks(thread, 330 + 340, 350 + 340);
-    memory.printMemoryBlocks(thread, 500 + 340, 508 + 340);
-    memory.printMemoryBlocks(thread, 398 + 340, 420 + 340);
-    // memory.printMemoryBlocks(thread, 595 + 340, 601 + 340);
+    
+    // memory.printMemoryBlocks(thread, 34 + 340, 35 + 340); // FOR round robin thread id
+
+    // memory.printMemoryBlocks(thread, 330 + 340, 350 + 340); // FOR round robin
+    // memory.printMemoryBlocks(thread, 500 + 340, 508 + 340); // FOR round robin
+    // memory.printMemoryBlocks(thread, 398 + 340, 420 + 340); // FOR round robin
+    
+    // memory.printMemoryBlocks(thread, 403, 424); // USE for first thread
+    // memory.printMemoryBlocks(thread, 503, 504);
+    // memory.printMemoryBlocks(thread, 603, 613);
 
     // memory.printMemoryBlocks(thread, 0, 1000);
     // memory.printMemoryBlocks(thread, 593, 601);
@@ -311,29 +315,10 @@ void CPU::debug() {
     memory.debug();
 }
 
-// DataBlock[200] = 0
-// DataBlock[201] = 101    tail = 100, tail.next 101, [tail.next] 102
+void CPU::thread_table_debug() {
+    memory.thread_table_debug();
+}
 
-
-// CPYI2 201 200 # [[200]] = [[201]] = 104
-// SET 20 202
-// CPYI 201 203  # [203] = [[201]] = 104
-// CPYI2 202 201 # [[201]] = [[202]] = 0
-// JIF 203 X
-
-// #change tail to [200] - 1 (101 - 1)
-// X CPY 200 204 # [204] = [200] = 101
-// ADD 204 -1    # [204] = 100
-// CPY 204 99
-// DataBlock[200] = 101 
-// DataBlock[201] = 103 [101] = [103] && [103] = 0
-
-// DataBlock[200] = 103 
-// DataBlock[201] = 105 [103] = [105] && [105] = 0
-
-// .
-// .
-// .
-
-// DataBlock[200] = 119
-// DataBlock[201] = 121 [119] = [121] && [121] = 0 ==>> jif 121 X (if it is tail)
+int CPU::getKernelMode() {
+    return kernel_mode;
+}

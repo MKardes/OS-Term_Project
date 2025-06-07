@@ -31,19 +31,25 @@ int main(int argc, char *argv[]) {
 
         CPU myCpu(filename, debug_level);
         std::cout << "CPU initialized" << std::endl;
-        
+
+        int old_kernel_mode = myCpu.getKernelMode();
         std::cout << "Executing..." << std::endl;
         while (!myCpu.isHalted()){
             myCpu.execute();
 
             /* DEBUG 1 */
             if (debug_level == 1 || debug_level == 2) {
-                // myCpu.debug();
+                myCpu.debug();
             }
 
             if (debug_level == 2 && !myCpu.isHalted()) {
                 std::cout << "Press enter to execute next instruction:";
                 std::cin.get();
+            }
+
+            if (debug_level == 3 && old_kernel_mode != myCpu.getKernelMode()) {
+                myCpu.thread_table_debug();
+                old_kernel_mode = myCpu.getKernelMode();
             }
         }
 

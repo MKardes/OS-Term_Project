@@ -50,6 +50,7 @@ public:
     void fillMemoryBlocks(int tn, std::vector<InstructionBlock> &instruction_blocks, std::vector<DataBlock> &data_blocks);
     void printMemoryBlocks(int tn, long unsigned int start = 0, long unsigned int end = 1000);
     void debug();
+    void thread_table_debug();
     DataBlock *getRegister(int address);
     void setRegister(int address, long value);
     DataBlock *getDataBlock(int tn, int address);

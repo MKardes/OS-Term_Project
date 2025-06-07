@@ -30,6 +30,8 @@ public:
     bool isHalted();
     void syscall();
     void debug();
+    void thread_table_debug();
+    int getKernelMode();
 };
 
 #endif

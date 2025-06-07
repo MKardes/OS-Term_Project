@@ -139,7 +139,7 @@ void Memory::printMemoryBlocks(int tn, long unsigned int start, long unsigned in
 void Memory::debug() {
     int mem = 0;
     std::cerr << "******************************************************************************" << std::endl;
-    std::cerr << "Debug 1 Begin" << std::endl;
+    std::cerr << "Debug Begin" << std::endl;
     std::cerr << "******************************************************************************" << std::endl;
     std::cerr << "---------------------------------" << std::endl;
     std::cerr << "OS Memory Begin" << std::endl;
@@ -180,7 +180,7 @@ void Memory::debug() {
 
     for (int tn = 0; tn < 10; tn++) {
         std::cerr << "---------------------------------" << std::endl;
-        std::cerr << "Thread " << tn << " Memory Begin" << std::endl;
+        std::cerr << "Thread " << tn + 1 << " Memory Begin" << std::endl;
         std::cerr << "---------------------------------" << std::endl;
         DataBlock *data_block_pointer = dynamic_cast<DataBlock*>(memory_blocks[tn][0]);
         if (!data_block_pointer) {
@@ -192,22 +192,76 @@ void Memory::debug() {
 
         std::cerr << mem++ << "." << memory_blocks[tn][0]->toString() << " # Start of data section" << std::endl;
         for (long unsigned int i = 1; i < start_of_data_section; i++) {
-            std::cerr << mem++ << "." << memory_blocks[tn][i]->toString() << std::endl;
+            if (memory_blocks[tn][i]) {
+                std::cerr << mem++ << "." << memory_blocks[tn][i]->toString() << std::endl;
+            }
         }
         for (long unsigned int i = start_of_data_section; i < stack_pointer + start_of_data_section; i++) {
-            std::cerr << mem++ << "." << memory_blocks[tn][i]->toString() << std::endl;
+            if (memory_blocks[tn][i]) {
+                std::cerr << mem++ << "." << memory_blocks[tn][i]->toString() << std::endl;
+            }
         }
         for (long unsigned int i = stack_pointer + start_of_data_section; i < memory_blocks[tn].size(); i++) {
-            std::cerr << mem++ << "." << memory_blocks[tn][i]->toString() << " # Stack" << std::endl;
+            if (memory_blocks[tn][i]) {
+                std::cerr << mem++ << "." << memory_blocks[tn][i]->toString() << " # Stack" << std::endl;
+            }
         }
         std::cerr << "---------------------------------" << std::endl;
-        std::cerr << "Thread " << tn << " Memory End" << std::endl;
+        std::cerr << "Thread " << tn + 1 << " Memory End" << std::endl;
         std::cerr << "---------------------------------" << std::endl;
         std::cerr << "******************************************************************************" << std::endl;
-        std::cerr << "Debug 1 End" << std::endl;
+        std::cerr << "Debug End" << std::endl;
         std::cerr << "******************************************************************************" << std::endl;
         std::cerr << std::endl;
     }
+}
+
+void Memory::thread_table_debug() {
+    int mem = 0;
+    std::cerr << "******************************************************************************" << std::endl;
+    std::cerr << "Debug Thread Table Begin" << std::endl;
+    std::cerr << "******************************************************************************" << std::endl;
+
+    DataBlock *data_block_pointer = dynamic_cast<DataBlock*>(os_blocks[0]);
+    if (!data_block_pointer) {
+        throw std::runtime_error("Data block pointer not found");
+    }
+    long start_of_data_section = data_block_pointer->getValue();
+
+    int thread_table_ends[10] = {21, 22, 23, 24, 25, 26, 27, 28, 29, 30};
+
+    for (int x = 0; x < 10; x++) {
+        std::string name;
+        if (x == 0) {
+            name = "OS";
+        } else {
+            name = "Thread " + std::to_string(x);
+        }
+        std::cerr << "---------------------------------" << std::endl;
+        std::cerr << "Thread Table For " << name << " Begin" << std::endl;
+        std::cerr << "---------------------------------" << std::endl;
+
+        DataBlock *end_of_thread_table = dynamic_cast<DataBlock*>(os_blocks[start_of_data_section + thread_table_ends[x]]);
+        if (!end_of_thread_table) {
+            throw std::runtime_error("Data block pointer not found");
+        }
+        long end_of_tt = end_of_thread_table->getValue();
+        for (long unsigned int i = end_of_tt + start_of_data_section - 16 ; i <= end_of_tt + start_of_data_section && i < os_blocks.size(); i++) {
+            if (os_blocks[i]) {
+                std::cerr << mem++ << "." << os_blocks[i]->toString() << std::endl;
+            }
+        }
+
+        std::cerr << "---------------------------------" << std::endl;
+        std::cerr << "Thread Table For " << name << " End" << std::endl;
+        std::cerr << "---------------------------------" << std::endl;
+
+    }
+
+    std::cerr << "******************************************************************************" << std::endl;
+    std::cerr << "Debug Thread Table End" << std::endl;
+    std::cerr << "******************************************************************************" << std::endl;
+    std::cerr << std::endl;
 }
 
 DataBlock *Memory::getRegister(int address) {
@@ -365,8 +419,6 @@ InstructionBlock *Memory::getNextInstruction(int tn) {
         throw std::runtime_error("Program counter register not found");
     }
 
-    std::cout << "Program counter: " << pg_reg->getValue() << std::endl;
-    std::cout << "Thread number: " << tn << std::endl;
     InstructionBlock *instruction_block = getInstructionBlock(tn, pg_reg->getValue()); 
     if (!instruction_block) {
         throw std::runtime_error("Instruction block not found");

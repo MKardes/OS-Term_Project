@@ -277,9 +277,9 @@ Begin Instruction Section
 157 ADD 505 -8    # [505] = thread block time
 158 CPYI 505 505  # [505] = time in instruction like (2310)
 
-# check if [20] - [505] is > 2000
-159 SUBI 20 505   # [505] = 3000 - 2310 write the difference
-160 ADD 505 -2000 # [505] = 810 -2000 <= 0  100 - 2000 -1900
+# check if [20] - [505] is > 100
+159 SUBI 20 505   # [505] = 300 - 231 write the difference
+160 ADD 505 -100 # [505] = 69 -100 <= 0 
 161 JIF 505 120   # jmp directly to find another thread to run
 162 CPY 330 505   # [505] = current_tn
 163 ADD 505 21    # [505] = thread_number + 21  (address of the end of that thread_table location)
@@ -398,94 +398,257 @@ End Instruction Section
 #41 CALL 19
 #42 HLT
 
+
+# Thread 1
 Begin Data Section
-0 0
-1 800
+0 0 # PC
+1 800 # SP
+100 26445   # Arr[0] = 26445
+101 10000   # Arr[1] = 10000
+102 9431    # Arr[2] = 9431 
+103 9331    # Arr[3] = 9331
+104 931     # Arr[4] = 931
+105 582     # Arr[5] = 582
+106 193     # Arr[6] = 193
+120 7       # N = 7
+200 -1      # result
+300 0       # i
+301 0
+302 0
+303 0
+304 0
+305 0
+306 0
+307 0
+308 0
+400 0       # 0 value to jump
 End Data Section
 Begin Instruction Section
-0 SET 1 2
-1 SYSCALL HLT
-End Instruction Section
-Begin Data Section
-0 0
-1 800
-End Data Section
-Begin Instruction Section
-0 SET 2 2
-1 SYSCALL HLT
-End Instruction Section
-Begin Data Section
-0 0
-1 800
-End Data Section
-Begin Instruction Section
-0 SET 344 2
-1 SYSCALL PRN 2 
-2 SYSCALL PRN 2 
-3 SYSCALL PRN 2 
-4 SYSCALL PRN 2 
-5 SYSCALL YIELD
-6 SYSCALL HLT
-End Instruction Section
-Begin Data Section
-0 0
-1 800
-End Data Section
-Begin Instruction Section
-0 SET 4 2
-1 SYSCALL HLT
-End Instruction Section
-Begin Data Section
-0 0
-1 800
-End Data Section
-Begin Instruction Section
-0 SET 5 2
-1 SYSCALL HLT
-End Instruction Section
-Begin Data Section
-0 0
-1 800
-End Data Section
-Begin Instruction Section
-0 SET 6 2
-1 SYSCALL YIELD
-2 SYSCALL YIELD
-3 SYSCALL YIELD
-4 SYSCALL YIELD
-5 SYSCALL HLT
-End Instruction Section
-Begin Data Section
-0 0
-1 800
-End Data Section
-Begin Instruction Section
-0 SET 7 2
-1 SYSCALL HLT
-End Instruction Section
-Begin Data Section
-0 0
-1 800
-End Data Section
-Begin Instruction Section
-0 SET 8 2
-1 SYSCALL HLT
-End Instruction Section
-Begin Data Section
-0 0
-1 800
-End Data Section
-Begin Instruction Section
-0 SET 9 2
-1 SYSCALL YIELD
-2 SYSCALL HLT
-End Instruction Section
-Begin Data Section
-0 0
-1 800
-End Data Section
-Begin Instruction Section
-0 SET 10 2
-1 SYSCALL HLT
+0 SET 0 300        # i = 0
+1 SET -1 200       # result = -1
+
+2 CPY 120 121      # 121 will be used as j
+3 CPY 300 301      # [301] = [300] (0)
+4 CPY 121 302      # [302] = N (size 7)
+5 ADD 302 -2       # [302] = 5 convert length to index - 1 we need to itterata until i - 1
+6 SUBI 301 302     # [302] = [301] - [302] (0-6) (1-6) (2-6) ... (6-6)
+7 JIF 302 9        # if it is not reached to size
+8 JIF 400 200      # jmp to change N
+
+9 SET 100 301      # [301] = 100
+10 ADDI 301 300     # [301] = [300] (i) + [301](100)
+11 CPY 301 302     # y = [301] // address of Arr[i]
+12 ADD 301 1
+13 CPY 301 303     # y = [301] // address of Arr[i + 1]
+# [302] will be the address of Arr[i]
+# [303] will be the address of Arr[i + 1]
+# wi will compare them and swap if needed
+
+14 CPYI 302 305   #  arr[i]     1 0 0
+15 CPYI 303 306   #  arr[i+1]   0 0 1
+16 CPY 306 307    #  temp
+17 SUBI 305 307   #  [306] = arr[i] - arr[i+1]  #  1 - 0 > 0, 0 - 0 <= 0, 0 - 1 <= 0
+18 JIF 307 22     #  resume
+19 SET 306 308    #  else swap
+20 CPYI2 302 303
+21 CPYI2 308 302
+# now lets compare key and arr[i]
+
+22 ADD 300 1     # i++
+23 JIF 400 3     # go start of the loop
+
+# change j (outer loop)
+200 SYSCALL YIELD
+201 CPY 121 122   # tmp
+202 ADD 122 -1    # tmp--
+203 JIF 122 300   # end the loop
+204 ADD 121 -1    # j--
+205 SET 0 300     # i = 0
+206 JIF 400 3     # go start of the loop
+
+
+# End
+300 SET 0 300
+
+301 CPY 300 301      # [301] = [300] (0)
+302 CPY 120 302      # [302] = N (size 7)
+303 ADD 302 -1       # [302] = 6 convert length to index
+304 SUBI 301 302     # [302] = [301] - [302] (0-6) (1-6) (2-6) ... (6-6)
+305 JIF 302 307      # if it is not reached to size
+306 JIF 400 314      # jmp to syscall hlt
+
+307 SET 100 301      # [301] = 100
+308 ADDI 301 300     # [301] = [300] (i) + [301](100)
+309 CPYI 301 302     # y = [[301]] // Arr[i]
+
+310 SYSCALL PRN 302  # Print a number
+311 ADD 300 1        # i++
+312 JIF 400 301        # go start of the loop
+
+314 SYSCALL HLT
 End Instruction Section
 
+
+# Thread 2 
+Begin Data Section
+0 0 # PC
+1 800 # SP
+100 582     # Arr[0] = 582
+101 193     # Arr[1] = 193
+102 26445   # Arr[2] = 26445 
+103 10000   # Arr[3] = 10000
+104 931     # Arr[4] = 931
+105 9331    # Arr[5] = 9331
+106 9431    # Arr[6] = 9431
+110 10000   # key = 10000
+120 7       # N = 7
+200 -1      # result
+300 0       # i
+301 0
+302 0
+303 0
+304 0
+305 0
+306 0
+400 0       # 0 value to jump
+End Data Section
+Begin Instruction Section
+0 SET 0 300        # i = 0
+1 SET -1 200       # result = -1
+
+2 CPY 300 301      # [301] = [300] (0)
+3 CPY 120 302      # [302] = N (size 7)
+4 ADD 302 -1       # [302] = 6 convert length to index
+5 SUBI 301 302     # [302] = [301] - [302] (0-6) (1-6) (2-6) ... (6-6)
+6 JIF 302 8        # if it is not reached to size
+7 JIF 400 23       # jmp to syscall prn and hlt
+
+8 SET 100 301      # [301] = 100
+9 ADDI 301 300     # [301] = [300] (i) + [301](100)
+10 CPYI 301 302    # y = [[301]] // Arr[i]
+
+11 CPY 110 304 # key
+12 CPY 302 305 # arr[i]
+13 CPY 302 306 # arr[i]
+# now lets compare key and arr[i]
+
+14 SUBI 304 305    # [305] = key - arr[i]
+15 SUBI 306 304    # [304] = arr[i] - key
+16 JIF 305 18
+17 JIF 400 19
+18 JIF 304 22
+19 ADD 300 1     # i++
+20 SYSCALL YIELD
+21 JIF 400 2     # go start of the loop
+22 CPY 300 200   # it is 0 which means that I found it
+
+# End
+23 SYSCALL PRN 200  # Print result
+24 SYSCALL HLT
+End Instruction Section
+
+
+# Thread 3
+# Algorithm that sums array and prints it
+Begin Data Section
+0 0 # PC
+1 800 # SP
+100 582     # Arr[0] = 582
+101 193     # Arr[1] = 193
+102 26445   # Arr[2] = 26445 
+103 10000   # Arr[3] = 10000
+104 931     # Arr[4] = 931
+105 9331    # Arr[5] = 9331
+106 9431    # Arr[6] = 9431
+120 7       # N = 7
+200 -1      # result
+300 0       # i
+301 0
+302 0
+303 0
+304 0
+305 0
+306 0
+400 0       # 0 value to jump
+End Data Section
+Begin Instruction Section
+0 SET 0 300        # i = 0
+1 SET 0 200       # result = 0
+
+2 CPY 300 301      # [301] = [300] (0)
+3 CPY 120 302      # [302] = N (size 7)
+4 ADD 302 -1       # [302] = 6 convert length to index
+5 SUBI 301 302     # [302] = [301] - [302] (0-6) (1-6) (2-6) ... (6-6)
+6 JIF 302 8        # if it is not reached to size
+7 JIF 400 15       # jmp to syscall prn and hlt
+
+8 SET 100 301      # [301] = 100
+9 ADDI 301 300     # [301] = [300] (i) + [301](100)
+10 CPYI 301 302    # y = [[301]] // Arr[i]
+
+11 ADDI 200 302
+12 ADD 300 1     # i++
+13 SYSCALL YIELD
+14 JIF 400 2     # go start of the loop
+
+# End
+15 SYSCALL PRN 200  # Print result
+16 SYSCALL HLT
+End Instruction Section
+
+
+Begin Data Section
+0 0
+1 800
+End Data Section
+Begin Instruction Section
+0 SYSCALL HLT
+End Instruction Section
+
+Begin Data Section
+0 0
+1 800
+End Data Section
+Begin Instruction Section
+0 SYSCALL HLT
+End Instruction Section
+
+Begin Data Section
+0 0
+1 800
+End Data Section
+Begin Instruction Section
+0 SYSCALL HLT
+End Instruction Section
+
+Begin Data Section
+0 0
+1 800
+End Data Section
+Begin Instruction Section
+0 SYSCALL HLT
+End Instruction Section
+
+Begin Data Section
+0 0
+1 800
+End Data Section
+Begin Instruction Section
+0 SYSCALL HLT
+End Instruction Section
+
+Begin Data Section
+0 0
+1 800
+End Data Section
+Begin Instruction Section
+0 SYSCALL HLT
+End Instruction Section
+
+Begin Data Section
+0 0
+1 800
+End Data Section
+Begin Instruction Section
+0 SYSCALL HLT
+End Instruction Section
