@@ -28,7 +28,7 @@ OS job:
 #
 # Syscaller thread: [33]
 #
-# empty memory blocks: [🗑️32], [🗑️34], [🗑️35], [36-49], [325-329] 🗑️[330-347], [348-397]
+# empty memory blocks: [🗑️32], [🗑️34], [🗑️35], [🗑️36] [🗑️37] [38-49], [325-329] 🗑️[330-347], [348-397]
 # Round Robin Scheduler:
 #
 # head of the round robin scheduler:             [398]

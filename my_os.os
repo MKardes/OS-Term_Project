@@ -1,9 +1,9 @@
 Begin Data Section
-0 331  # pc # TODO: fOR NOW
+0 0  # pc # TODO: fOR NOW
 1 600  # stack pointer
 2 0
 3 0
-4 0
+4 -1
 5 0
 6 0
 7 0
@@ -16,7 +16,7 @@ Begin Data Section
 14 0
 15 0
 16 0
-17 0
+17 1 # default SYSCALL is YIELD to make os call round robin
 18 0
 19 0
 20 0
@@ -31,52 +31,48 @@ Begin Data Section
 29 266 
 30 291 
 31 316
-51 0
-52 0
-53 0
-54 0
-55 0
-56 0
+50 0
 57 0 # ready tr 0 ready
-58 0
-59 0
-60 0
-61 0
-62 0
-63 0
-64 0
-65 0
-66 0
 75 0
+76 600
 79 1
 82 0 # ready tr 1 ready
+100 0
+101 600
+104 2
 107 0 # ready tr 2 ready
+125 0
+126 600
+129 3
 132 0 # ready tr 3 ready
-157 1 # ready tr 4 ready
+150 0
+151 600
+154 4
+157 0 # ready tr 4 ready
+175 0
+176 600
+179 5
 182 0 # ready tr 5 ready
+200 0
+201 600
+204 6
 207 0 # ready tr 6 ready
-232 1 # ready tr 7 ready
-257 1 # ready tr 8 ready
-282 1 # ready tr 9 ready
+225 0
+226 600
+229 7
+232 0 # ready tr 7 ready
+250 0
+251 600
+254 8
+257 0 # ready tr 8 ready
+275 0
+276 600
+279 9
+282 0 # ready tr 9 ready
+300 0
+301 600
+304 10
 307 0 # ready tr 10 ready
-150 150
-151 151
-152 152
-153 153
-154 154
-155 155
-156 156
-158 158
-159 159
-160 160
-161 161
-162 162
-163 163
-164 164
-165 165
-166 166
-167 167
-168 168
 
 # Round robin list
 398 400 # head
@@ -107,34 +103,62 @@ Begin Instruction Section
 
 # SYSCALL occured. We need to context switch user -> os
 0 SET 0 32
-1 JIF 32 50  # put user data from reg to mem
-2 CPY 21 500
-3 JIF 32 80  # put os data from mem to reg
-4 CPY 17 500 # syscall type to [500]
-5 JIF 500 131 # if HLT
-6 ADD 500 -1
-7 JIF 500 120 # if YIELD
+1 CPY 4 35     # currently running thread
+2 ADD 35 1     # currently running thread + 1
+3 JIF 35 7     # if currently running thread is negative then it is initiallizion pass the reg -> mem and mem -> reg phases
+4 JIF 32 50    # put user data from reg to mem
+5 CPY 21 500
+6 JIF 32 80    # put os data from mem to reg
+7 CPY 17 500   # syscall type to [500]
+8 JIF 500 131  # if HLT
+9 ADD 500 -1
+10 JIF 500 120  # if YIELD
 #8 ADD 500 -1
-#9 JIF 500 3000 # PRN
-8 HLT
+#9 JIF 500 999 # if PRN
+11 HLT
 
 
 # MAY be Standart start of OS with thread 1
 # 0 SET 1 34
-# 1 CALL 21
+# 1 CALL 19
 # 2 HLT
 
 
 # CONTEXT SWITCH (thread_number) mem [34] will be the thread number that we want to changed to
+# if it is initiallizion we need to make reg -> mem but not mem -> reg for threads
+19 SET 0 36
+20 JIF 36 30 
 21 CPY 34 500   # [500] = tn thread that will be SWITCH ed to
 22 SET 0 502    # [502] = 0   # x = 0
 23 JIF 502 50   # Send Registers to memory
-24 CPY 34 500  # [500] = [503]   # temp
-25 ADD 500 21   # [500] = thread_number + 21  (address of the end of that thread_table location)
-26 CPYI 500 500 # [500] = [[500]] # [500] = [68] # assign to [500] address of the end of the thread_table
-27 JIF 502 80
-28 RET
+24 JIF 36 37    # this will jump only if it is on init # go fill 500 and 4 and make USER
+25 CPY 34 500   # [500] = [34]   # temp
+26 ADD 500 21   # [500] = thread_number + 21  (address of the end of that thread_table location)
+27 CPYI 500 500 # [500] = [[500]] # [500] = [68] # assign to [500] address of the end of the thread_table
+28 JIF 502 80
+29 RET
 # CONTEXT SWITCH END
+
+# CHECK INITIALLIZZION
+30 CPY 4 36     #
+31 ADD 36 1     # currently running thread + 1 (0 if on init)
+32 JIF 36 35    # if initiallizion jump
+33 SET 0 37
+33 SET 1 36
+34 JIF 37 21
+35 SET 0 4      # set 4 0 for os
+36 JIF 4 21
+# END
+
+# go fill 500 and 4 and make USER
+37 CPY 34 4
+38 CPY 34 500   # [500] = [34]   # temp
+39 ADD 500 21   # [500] = thread_number + 21  (address of the end of that thread_table location)
+40 CPYI 500 500 # [500] = [[500]] # [500] = [68] # assign to [500] address of the end of the thread_table
+41 ADD 500 -16  # Find pc (in jumpped place it will be get so I only need the address of the pc)
+42 JIF 36 89 
+# END
+
 
 # LOOP From Reg to Mem
 # 4 is the currently running_thread [501, 502, 504, 505, 506] will be used
@@ -156,7 +180,7 @@ Begin Instruction Section
 62 SET 18 506    # old_pc for the thread we need to save this
 63 CPYI2 506 505 # [[505]] = [[506]] # [68 - 16] = (old_pc from [18]) # the correct pc for thread
 64 CPY 4 33      # [33] = [4] thread number is assigned to syscaller  
-65 JIF 502 2     # jump to calle
+65 JIF 502 5     # jump to calle
 
 # if we switch from os to user thread
 66 SET 502 506
@@ -181,7 +205,7 @@ Begin Instruction Section
 90 USER 500      # This will move [19] = tt[4] and [0] = tt[0] for context switching
 # OS End here if os -> user
 
-91 JIF 502 4     # Return to handle syscall events
+91 JIF 502 7     # Return to handle syscall events
 # LOOP From Mem to Reg END
 
 # ROUN ROBIN FUNCTION BEGIN [330(TID SET), 331, 332, 333, 334]
@@ -217,7 +241,7 @@ Begin Instruction Section
 127 ADD 505 -1
 128 JIF 505 120  # thread is BLOCKED call new one from round robin
 129 CPY 330 34  # TODO: SANKİ Bİ DERT var set 1 ? # old: 'SET 1 34'
-130 CALL 21
+130 CALL 19
 # SYSCALL YIELD END
 
 
@@ -327,7 +351,7 @@ End Instruction Section
 # Example usage of the after round robin context-switch 
 # Start Of the function
 #40 PUSH 4
-#41 CALL 21
+#41 CALL 19
 #42 HLT
 
 Begin Data Section
