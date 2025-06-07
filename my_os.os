@@ -104,19 +104,19 @@ Begin Instruction Section
 
 # SYSCALL occured. We need to context switch user -> os
 0 SET 0 32
-1 CPY 4 35     # currently running thread
-2 ADD 35 1     # currently running thread + 1
-3 JIF 35 7     # if currently running thread is negative then it is initiallizion pass the reg -> mem and mem -> reg phases
-4 JIF 32 50    # put user data from reg to mem
+1 CPY 4 35      # currently running thread
+2 ADD 35 1      # currently running thread + 1
+3 JIF 35 7      # if currently running thread is negative then it is initiallizion pass the reg -> mem and mem -> reg phases
+4 JIF 32 50     # put user data from reg to mem
 5 CPY 21 500
-6 JIF 32 80    # put os data from mem to reg
-7 CPY 17 500   # syscall type to [500]
-8 JIF 500 131  # if HLT
+6 JIF 32 80     # put os data from mem to reg
+7 CPY 17 500    # syscall type to [500]
+8 JIF 500 131   # if HLT
 9 ADD 500 -1
 10 JIF 500 120  # if YIELD
-#8 ADD 500 -1
-#9 JIF 500 999 # if PRN
-11 HLT
+11 ADD 500 -1
+12 JIF 500 140  # if PRN
+13 HLT
 
 
 # MAY be Standart start of OS with thread 1
@@ -241,7 +241,7 @@ Begin Instruction Section
 125 CPYI 505 505 # [505] =  (rdy:0, blc:1, run:2)
 126 JIF 505 129  # thread is ready go context switch
 127 ADD 505 -1
-128 JIF 505 120  # thread is BLOCKED call new one from round robin
+128 JIF 505 154  # thread is BLOCKED call new one from round robin
 129 CPY 330 34
 130 CALL 19
 # SYSCALL YIELD END
@@ -257,9 +257,39 @@ Begin Instruction Section
 
 # SYSCALL PRN START
 # 33, CALLER THREAD WILL BE BLOCKED FOR 100 instruction
-
-# CALL ROUND ROBIN
+140 CPY 33 505   # [505] = syscallee
+141 ADD 505 21   # [505] = thread_number + 21  (address of the end of that thread_table location)
+142 CPYI 505 505 # [505] = [[505]] # [505] = [68] # assign to [505] address of the end of the thread_table
+143 ADD 505 -9   # [505] = thread state address
+144 SET 1 42
+145 SET 42 43
+146 CPYI2 43 505 # [[505]] = 1 (blc:1)
+147 ADD 505 1    # [505] = thread block start address
+148 CPY 20 42    # current instruction count is set
+149 CPYI2 43 505 # [[505]] = start of the number of instruction
+150 CALL 120     # call round robin
 # SYSCALL PRN END
+
+# CHECK if we can unblock a thread
+154 CPY 330 505   # [505] = current_tn
+155 ADD 505 21    # [505] = thread_number + 21  (address of the end of that thread_table location)
+156 CPYI 505 505  # [505] = [[505]] # [505] = [68] # assign to [505] address of the end of the thread_table
+157 ADD 505 -8    # [505] = thread block time
+158 CPYI 505 505  # [505] = time in instruction like (2310)
+
+# check if [20] - [505] is > 2000
+159 SUBI 20 505   # [505] = 3000 - 2310 write the difference
+160 ADD 505 -2000 # [505] = 810 -2000 <= 0  100 - 2000 -1900
+161 JIF 505 120   # jmp directly to find another thread to run
+162 CPY 330 505   # [505] = current_tn
+163 ADD 505 21    # [505] = thread_number + 21  (address of the end of that thread_table location)
+164 CPYI 505 505  # [505] = [[505]] # [505] = [68] # assign to [505] address of the end of the thread_table
+165 ADD 505 -9    # [505] = thread state
+166 SET 0 42
+167 SET 42 43
+168 CPYI2 43 505  # [[505]] = 0 (rdy:0)
+169 JIF 40 129
+# end
 
 # check if it is the last thread on round robin
 180 CPY 398 38
@@ -389,10 +419,13 @@ Begin Data Section
 1 800
 End Data Section
 Begin Instruction Section
-0 SET 3 2
-1 SYSCALL YIELD
-2 SYSCALL YIELD
-3 SYSCALL HLT
+0 SET 344 2
+1 SYSCALL PRN 2 
+2 SYSCALL PRN 2 
+3 SYSCALL PRN 2 
+4 SYSCALL PRN 2 
+5 SYSCALL YIELD
+6 SYSCALL HLT
 End Instruction Section
 Begin Data Section
 0 0
@@ -445,9 +478,7 @@ End Data Section
 Begin Instruction Section
 0 SET 9 2
 1 SYSCALL YIELD
-2 SYSCALL YIELD
-3 SYSCALL YIELD
-4 SYSCALL HLT
+2 SYSCALL HLT
 End Instruction Section
 Begin Data Section
 0 0
