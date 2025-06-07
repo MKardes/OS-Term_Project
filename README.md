@@ -101,13 +101,13 @@ The project uses a Makefile for building and includes debug modes for:
 ## Screenshots
 
 ### Round Robin Scheduler Implementation
-![Round Robin Scheduler](ss/Round%20Robin.png)
+![Round Robin Scheduler](Ss/Round%20Robin.png)
 
 ### Round Robin Scheduler Design (Miro)
-![Round Robin Scheduler Design](ss/Round%20Robin%20Miro.png)
+![Round Robin Scheduler Design](Ss/Round%20Robin%20Miro.png)
 
 ### Round Robin Thread Removal Process
-![Round Robin Thread Removal](ss/Round%20Robin%20removal.png)
+![Round Robin Thread Removal](Ss/Round%20Robin%20removal.png)
 
 ## Development Process
 The project development followed these steps:
