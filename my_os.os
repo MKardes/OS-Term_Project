@@ -1,5 +1,5 @@
 Begin Data Section
-0 0  # pc # TODO: fOR NOW
+0 0  # pc
 1 600  # stack pointer
 2 0
 3 0
@@ -31,6 +31,7 @@ Begin Data Section
 29 266 
 30 291 
 31 316
+40 0 # always 0
 50 0
 57 0 # ready tr 0 ready
 75 0
@@ -209,25 +210,26 @@ Begin Instruction Section
 # LOOP From Mem to Reg END
 
 # ROUN ROBIN FUNCTION BEGIN [330(TID SET), 331, 332, 333, 334]
-92 JIF 398 110   # Return if the head is 0 which means that each thread is done
+92 JIF 398 111    # Return if the head is 0 which means that each thread is done JUMP to HLT (111)
 93 CPYI 398 330   # [330] = 0 Copy thread ID (T6) to register 4 (RUN the thread)
 94 CPY 398 331    # [331] = 100 Copy address of that thread to register 331 TMP
-95 CPY 331 332     # [332] = 100
+95 CPY 331 332    # [332] = 100
 96 ADD 332 1      # [332] = 101 which is address of  next of T6
-97 CPYI 332 398   # [398] = 102 which is next of T6
+97 JIF 40 180     # Move always (40=0) to 180
 98 CPY 399 333    # [333] = 120
 99 ADD 333 1      # [333] = 121
-100 SET 331 334     # [334] = 331
-101 CPYI2 334 333  # [121] = 100 which means that tail-> next is T6 now
+100 SET 331 334   # [334] = 331
+101 CPYI2 334 333 # [121] = 100 which means that tail-> next is T6 now
 102 CPY 331 399   # [399] = 100 which means that tail shows T6 now
 103 SET 0 331     # [331] = 0
-104 SET 331 333    # [333] = 331
-105 CPYI2 333 332  # [101] = 0 which means that tail shows T6 now
+104 SET 331 333   # [333] = 331
+105 CPYI2 333 332 # [101] = 0 which means that tail shows T6 now
 106 SET 0 331
 107 SET 0 332
 108 SET 0 333
 109 SET 0 334
 110 RET
+111 HLT
 # ROUN ROBIN FUNCTION END
 
 # SYSCALL YIELD START
@@ -235,12 +237,12 @@ Begin Instruction Section
 121 CPY 330 505  # [505] = current_tn
 122 ADD 505 21   # [505] = thread_number + 21  (address of the end of that thread_table location)
 123 CPYI 505 505 # [505] = [[505]] # [505] = [68] # assign to [505] address of the end of the thread_table
-124 ADD 505 -9   # [505] = thread state # TODO: -7 -> -9 yapıldı
+124 ADD 505 -9   # [505] = thread state
 125 CPYI 505 505 # [505] =  (rdy:0, blc:1, run:2)
 126 JIF 505 129  # thread is ready go context switch
 127 ADD 505 -1
 128 JIF 505 120  # thread is BLOCKED call new one from round robin
-129 CPY 330 34  # TODO: SANKİ Bİ DERT var set 1 ? # old: 'SET 1 34'
+129 CPY 330 34
 130 CALL 19
 # SYSCALL YIELD END
 
@@ -259,6 +261,18 @@ Begin Instruction Section
 # CALL ROUND ROBIN
 # SYSCALL PRN END
 
+# check if it is the last thread on round robin
+180 CPY 398 38
+181 CPY 399 39
+182 CPY 39 41
+183 SUBI 38 39    # [39] = [38] - [39] # HEAD - TAIL = -1  =>   <= 0
+184 SUBI 41 38    # [38] = [41] - [38] # TAIL - HEAD =  1  => ! <= 0
+185 JIF 39 187
+186 JIF 40 188    # jump always
+187 JIF 38 98
+188 CPYI 332 398  # [398] = 102 which is next of T6
+189 JIF 40 98
+# end
 
 # ROUND ROBIN REMOVE FUNCTION BEGIN (thread_number) [335, 336, 337, 338, 339, 340, 341, 342, 343, 344, 345, 346 = 0 (it needed to be set to 0 before calling)]
 199 SET 0 340    # init with 0
@@ -279,7 +293,7 @@ Begin Instruction Section
 214 JIF 337 216
 215 JIF 346 205  # this need to be default jump so 0 value need to be send
 216 JIF 338 218
-217 JIF 346 205 # TODO: HERE if the thread couldn't found in the roundrobin it need to be breaked. Because it jumps to 0 which is next to tail and halts somehow
+217 JIF 346 205
 
 
 # If the thread was FOUND
@@ -329,7 +343,7 @@ Begin Instruction Section
 326 JIF 505 329  # thread is ready go context switch
 327 ADD 505 -1
 328 JIF 505 320  # thread is BLOCKED call new one from round robin
-329 CPY 330 34 # TODO: Belki bu aslında kullanılır # Push the tn that will be context switched to 
+329 CPY 330 34   # Push the tn that will be context switched to 
 330 RET
 
 331 SET 0 506
@@ -376,7 +390,9 @@ Begin Data Section
 End Data Section
 Begin Instruction Section
 0 SET 3 2
-1 SYSCALL HLT
+1 SYSCALL YIELD
+2 SYSCALL YIELD
+3 SYSCALL HLT
 End Instruction Section
 Begin Data Section
 0 0
@@ -400,7 +416,11 @@ Begin Data Section
 End Data Section
 Begin Instruction Section
 0 SET 6 2
-1 SYSCALL HLT
+1 SYSCALL YIELD
+2 SYSCALL YIELD
+3 SYSCALL YIELD
+4 SYSCALL YIELD
+5 SYSCALL HLT
 End Instruction Section
 Begin Data Section
 0 0
@@ -424,7 +444,10 @@ Begin Data Section
 End Data Section
 Begin Instruction Section
 0 SET 9 2
-1 SYSCALL HLT
+1 SYSCALL YIELD
+2 SYSCALL YIELD
+3 SYSCALL YIELD
+4 SYSCALL HLT
 End Instruction Section
 Begin Data Section
 0 0

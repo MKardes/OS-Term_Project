@@ -121,7 +121,7 @@ void CPU::execute_instruction(long tn, InstructionBlock *instruction) {
     long inner_address_1 = 0;
     long inner_address_2 = 0;
     long stack_pointer = 0;
-    long old_pc = 0;
+    // long old_pc = 0;
     long user_tn = 0;
     // long user_pc = 0;
 
@@ -240,8 +240,8 @@ void CPU::execute_instruction(long tn, InstructionBlock *instruction) {
             break;
         case OpCode::SYSCALL:
             kernel_mode = true;
-            old_pc = memory.getRegister(CPU::PROGRAM_COUNTER)->getValue();
-            memory.setRegister(CPU::THREAD_TEMP_PC_SWITCH, old_pc);
+            //old_pc = memory.getRegister(CPU::PROGRAM_COUNTER)->getValue();
+            memory.setRegister(CPU::THREAD_TEMP_PC_SWITCH, computed_pg);
 
             switch (instruction->getOpcode2()) {
                 case OpCode::HLT:
